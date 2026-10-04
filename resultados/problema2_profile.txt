@@ -1,0 +1,12 @@
+cProfile de problema2 con n = 10000
+
+         10002 function calls in 0.002 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.002    0.002 /Users/dally/Downloads/lab8/problema2.py:4(function)
+    10000    0.001    0.000    0.001    0.000 {built-in method builtins.print}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

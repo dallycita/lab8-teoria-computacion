@@ -1,0 +1,250 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{parskip}
+
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+
+\title{Laboratorio 8 -- Teoría de la Computación\\\large Respuestas teóricas}
+\author{Dally Ramírez -- Carné 241035}
+\date{Octubre 2026}
+
+\begin{document}
+\maketitle
+
+En todo el documento $n/2$, $n/3$ en el código representan división entera, como en C. Las mediciones mencionadas son las de la parte b (ver \texttt{README.md}).
+
+%--------------------------------------------------------------------
+\section*{Problema 1 -- Parte a}
+
+\begin{verbatim}
+for (i = n/2; i <= n; i++)
+    for (j = 1; j+n/2 <= n; j++)
+        for (k = 1; k <= n; k = k*2)
+            counter++;
+\end{verbatim}
+
+\textbf{Ciclo externo.} $i$ va de $\floor{n/2}$ hasta $n$, entonces da
+\[
+n - \floor{n/2} + 1 = \ceil{n/2} + 1 \text{ iteraciones.}
+\]
+
+\textbf{Ciclo del medio.} La condición $j + \floor{n/2} \le n$ es lo mismo que $j \le n - \floor{n/2} = \ceil{n/2}$. Como $j$ empieza en 1, da $\ceil{n/2}$ iteraciones. No depende de $i$.
+
+\textbf{Ciclo interno.} $k$ toma los valores $1, 2, 4, \dots, 2^m$ mientras $2^m \le n$, o sea $m \le \log_2 n$. Da
+\[
+\floor{\log_2 n} + 1 \text{ iteraciones.}
+\]
+
+\textbf{Total.} Como los tres ciclos son independientes, se multiplican:
+\[
+T(n) = \left(\ceil{n/2}+1\right)\cdot\ceil{n/2}\cdot\left(\floor{\log_2 n}+1\right)
+\]
+
+\textbf{Simplificación.} Para $n \ge 2$:
+\begin{itemize}
+  \item Cota superior: $\ceil{n/2} \le n$, \ $\ceil{n/2}+1 \le 2n$ \ y \ $\floor{\log_2 n}+1 \le 2\log_2 n$, entonces $T(n) \le 4n^2\log_2 n$.
+  \item Cota inferior: $\ceil{n/2} \ge n/2$ \ y \ $\floor{\log_2 n}+1 \ge \log_2 n$, entonces $T(n) \ge \tfrac{1}{4} n^2 \log_2 n$.
+\end{itemize}
+Por lo tanto
+\[
+\boxed{T(n) = \Theta(n^2 \log n)} \quad\Rightarrow\quad T(n) = O(n^2\log n).
+\]
+
+\textbf{Comparación con las mediciones.} Según la fórmula, $T(10000)/T(1000) = \dfrac{5001\cdot 5000\cdot 14}{501\cdot 500\cdot 10} \approx 139.7$. El tiempo medido subió de $0.0376$ s a $5.34$ s, un factor de $142$. Es un poco más de 100 por el factor $\log n$ (de 10 a 14).
+
+%--------------------------------------------------------------------
+\section*{Problema 2 -- Parte a}
+
+\begin{verbatim}
+if (n <= 1) return;
+for (i = 1; i <= n; i++)
+    for (j = 1; j <= n; j++) {
+        printf("Sequence\n");
+        break;
+    }
+\end{verbatim}
+
+\textbf{Caso $n \le 1$.} La función retorna de inmediato: costo constante.
+
+\textbf{Ciclo externo.} $i$ va de 1 a $n$: $n$ iteraciones.
+
+\textbf{Ciclo interno.} Empieza con $j = 1$; como $1 \le n$, entra, imprime y el \texttt{break} sale del ciclo. Nunca llega a $j = 2$, así que el ciclo interno hace \textbf{exactamente 1 iteración} sin importar $n$.
+
+\textbf{Total.}
+\[
+T(n) = \sum_{i=1}^{n} 1 = n \quad\Rightarrow\quad \boxed{T(n) = \Theta(n)} = O(n).
+\]
+
+Aunque hay dos ciclos anidados, \textbf{no} es $O(n^2)$: lo que importa es cuántas veces se ejecuta realmente el ciclo interno.
+
+\textbf{Comparación con las mediciones.} Cada vez que $n$ se multiplicó por 10, el tiempo se multiplicó por aproximadamente 10 (por ejemplo, de $0.0105$ s a $0.1057$ s), que es el comportamiento lineal esperado.
+
+%--------------------------------------------------------------------
+\section*{Problema 3 -- Parte a}
+
+\begin{verbatim}
+for (i = 1; i <= n/3; i++)
+    for (j = 1; j <= n; j += 4)
+        printf("Sequence\n");
+\end{verbatim}
+
+\textbf{Ciclo externo.} $i$ va de 1 a $\floor{n/3}$: $\floor{n/3}$ iteraciones.
+
+\textbf{Ciclo interno.} $j$ toma los valores $1, 5, 9, \dots, 1+4t \le n$, o sea $t \le (n-1)/4$. Da
+\[
+\floor{\tfrac{n-1}{4}} + 1 = \ceil{n/4} \text{ iteraciones.}
+\]
+
+\textbf{Total.}
+\[
+T(n) = \floor{n/3}\cdot\ceil{n/4} \approx \frac{n}{3}\cdot\frac{n}{4} = \frac{n^2}{12}
+\]
+
+\textbf{Simplificación.} Para $n \ge 4$: $\floor{n/3} \le n/3$ \ y \ $\ceil{n/4} \le n/4 + 1 \le n/2$, entonces $T(n) \le n^2/6$. También $\floor{n/3} \ge n/6$ \ y \ $\ceil{n/4} \ge n/4$, entonces $T(n) \ge n^2/24$. Por lo tanto
+\[
+\boxed{T(n) = \Theta(n^2)} = O(n^2).
+\]
+Las constantes $1/3$ y el paso de 4 solo cambian la constante ($1/12$), no el orden.
+
+\textbf{Comparación con las mediciones.} Según la fórmula, cada vez que $n$ se multiplica por 10, $T(n)$ se multiplica por 100. Medido: de $0.0060$ s a $0.6103$ s (factor $101$) y de $0.6103$ s a $61.11$ s (factor $100.1$).
+
+%--------------------------------------------------------------------
+\section*{Problema 4 -- Mejor, promedio y peor caso}
+
+\textbf{Interpretación del enunciado.} El enunciado dice ``Búsqueda Lineal'' pero entre paréntesis menciona Linear Search, Binary Search y Quick Sort. Se analizan los tres algoritmos. En todos se cuenta el número de comparaciones sobre un arreglo de tamaño $n$.
+
+\subsection*{Linear Search}
+Recorre el arreglo desde la posición 0 hasta encontrar $x$ o llegar al final.
+\begin{itemize}
+  \item \textbf{Mejor caso:} $x$ está en la primera posición. Se hace 1 comparación: $\Theta(1)$.
+  \item \textbf{Peor caso:} $x$ está en la última posición o no está. Se comparan los $n$ elementos: $\Theta(n)$.
+  \item \textbf{Caso promedio:} suponiendo que $x$ está en el arreglo y que cada posición es igual de probable (probabilidad $1/n$), encontrarlo en la posición $i$ cuesta $i$ comparaciones:
+  \[
+  \frac{1}{n}\sum_{i=1}^{n} i = \frac{1}{n}\cdot\frac{n(n+1)}{2} = \frac{n+1}{2} \quad\Rightarrow\quad \Theta(n).
+  \]
+  En promedio revisa la mitad del arreglo, pero sigue siendo lineal.
+\end{itemize}
+
+\subsection*{Binary Search}
+Requiere un arreglo ordenado. Compara $x$ con el elemento del medio y descarta la mitad que no puede contenerlo.
+\begin{itemize}
+  \item \textbf{Mejor caso:} $x$ es el elemento del medio. 1 comparación: $\Theta(1)$.
+  \item \textbf{Peor caso:} cada iteración deja la mitad de elementos: $n, n/2, n/4, \dots, 1$. Después de $k$ iteraciones quedan $n/2^k$ elementos, y el proceso termina cuando $n/2^k < 1$, es decir con $k = \floor{\log_2 n} + 1$ iteraciones: $\Theta(\log n)$.
+  \item \textbf{Caso promedio:} con $n = 2^k - 1$ elementos, 1 elemento se encuentra con 1 comparación, 2 con 2, 4 con 3 y en general $2^{d-1}$ elementos necesitan $d$ comparaciones. Si cada elemento es igual de probable:
+  \[
+  \frac{1}{n}\sum_{d=1}^{k} d\cdot 2^{d-1} = \frac{(k-1)2^k + 1}{n} = (k-1) + \frac{k}{n} \approx \log_2(n+1) - 1 \quad\Rightarrow\quad \Theta(\log n).
+  \]
+  El promedio es solo una comparación menos que el peor caso, porque la mitad de los elementos están en el último nivel.
+\end{itemize}
+
+\subsection*{Quick Sort}
+Elige un pivote, particiona el arreglo ($n-1$ comparaciones) en los menores y los mayores al pivote, y ordena recursivamente cada parte. Si el pivote queda en la posición $q$:
+\[
+T(n) = T(q) + T(n-q-1) + (n-1).
+\]
+\begin{itemize}
+  \item \textbf{Mejor caso:} el pivote siempre queda en el medio, así que las dos partes tienen tamaño $n/2$:
+  \[
+  T(n) = 2T(n/2) + cn.
+  \]
+  Por el Teorema Maestro ($a = 2$, $b = 2$, $f(n) = n = n^{\log_2 2}$) es $\Theta(n\log n)$. Intuitivamente, hay $\log_2 n$ niveles de recursión y en cada uno se hace trabajo $cn$.
+
+  \item \textbf{Peor caso:} el pivote siempre es el mínimo o el máximo. Por ejemplo, un arreglo ya ordenado con el último elemento como pivote. Una parte queda vacía y la otra con $n-1$ elementos:
+  \[
+  T(n) = T(n-1) + (n-1) = \sum_{k=1}^{n}(k-1) = \frac{n(n-1)}{2} \quad\Rightarrow\quad \Theta(n^2).
+  \]
+
+  \item \textbf{Caso promedio:} con una permutación aleatoria, el pivote tiene la misma probabilidad $1/n$ de quedar en cada posición $q = 0, \dots, n-1$:
+  \[
+  T(n) = (n-1) + \frac{2}{n}\sum_{q=0}^{n-1} T(q).
+  \]
+  Multiplicando por $n$ y restando la misma ecuación para $n-1$:
+  \[
+  nT(n) - (n-1)T(n-1) = 2(n-1) + 2T(n-1) \;\Rightarrow\; nT(n) = (n+1)T(n-1) + 2(n-1).
+  \]
+  Dividiendo entre $n(n+1)$ y usando $\frac{2(k-1)}{k(k+1)} = \frac{4}{k+1} - \frac{2}{k}$, la suma telescópica con $T(1) = 0$ da
+  \[
+  T(n) = 2(n+1)H_n - 4n, \qquad H_n = \sum_{k=1}^{n}\frac{1}{k} \approx \ln n.
+  \]
+  Entonces $T(n) \approx 2n\ln n \approx 1.39\, n\log_2 n$, es decir $\Theta(n\log n)$. (Comprobación: $T(2) = 1$ y $T(3) = 8/3$, igual que con la recurrencia.)
+\end{itemize}
+
+\subsection*{Resumen}
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Algoritmo & Mejor caso & Caso promedio & Peor caso \\
+\midrule
+Linear Search & $\Theta(1)$ & $\Theta(n)$ & $\Theta(n)$ \\
+Binary Search & $\Theta(1)$ & $\Theta(\log n)$ & $\Theta(\log n)$ \\
+Quick Sort    & $\Theta(n\log n)$ & $\Theta(n\log n)$ & $\Theta(n^2)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%--------------------------------------------------------------------
+\section*{Problema 5 -- Verdadero o falso}
+
+Se asume, como es usual, que las funciones son positivas para $n$ suficientemente grande.
+
+\subsection*{a) Si $f = \Theta(g)$ y $g = \Theta(h)$, entonces $h = \Theta(f)$. \quad \textbf{Verdadero}}
+
+Por definición existen constantes positivas tales que:
+\[
+c_1 g(n) \le f(n) \le c_2 g(n) \quad (n \ge n_1), \qquad c_3 h(n) \le g(n) \le c_4 h(n) \quad (n \ge n_2).
+\]
+Para $n \ge \max(n_1, n_2)$, sustituyendo la segunda en la primera:
+\[
+c_1 c_3\, h(n) \le f(n) \le c_2 c_4\, h(n).
+\]
+Despejando $h(n)$:
+\[
+\frac{1}{c_2 c_4} f(n) \le h(n) \le \frac{1}{c_1 c_3} f(n),
+\]
+con constantes positivas, así que $h(n) = \Theta(f(n))$. Esto muestra que $\Theta$ es transitiva y simétrica.
+
+\subsection*{b) Si $f = O(g)$ y $g = O(h)$, entonces $h = \Omega(f)$. \quad \textbf{Verdadero}}
+
+Existen constantes positivas con
+\[
+f(n) \le c_1 g(n) \quad (n \ge n_1), \qquad g(n) \le c_2 h(n) \quad (n \ge n_2).
+\]
+Para $n \ge \max(n_1, n_2)$: $f(n) \le c_1 c_2\, h(n)$, o sea $f = O(h)$ (transitividad). Despejando:
+\[
+h(n) \ge \frac{1}{c_1 c_2} f(n),
+\]
+que es justo la definición de $h(n) = \Omega(f(n))$.
+
+\subsection*{c) El tiempo de \texttt{A(n)} es $\Theta(n^2)$. \quad \textbf{Falso}}
+
+\begin{verbatim}
+def A(n):
+    atupla = tuple(range(0, n))
+    S = set()
+    for i in range(0, n):
+        for j in range(i + 1, n):
+            S.add(atupla[i:j])
+\end{verbatim}
+
+Es cierto que el cuerpo del ciclo se ejecuta $\sum_{i=0}^{n-1}(n-1-i) = \frac{n(n-1)}{2} = \Theta(n^2)$ veces, pero \textbf{cada iteración no cuesta $O(1)$}:
+\begin{itemize}
+  \item \texttt{atupla[i:j]} crea una tupla nueva copiando $j-i$ elementos: costo $\Theta(j-i)$.
+  \item \texttt{S.add(...)} tiene que calcular el hash de esa tupla, y el hash de una tupla se calcula recorriendo todos sus elementos: otra vez $\Theta(j-i)$. Como todas las rebanadas son distintas, no hay comparaciones adicionales por duplicados.
+\end{itemize}
+Además, \texttt{tuple(range(0, n))} cuesta $\Theta(n)$, que no afecta. Entonces:
+\[
+f(n) = \Theta\!\left(\sum_{i=0}^{n-1}\sum_{j=i+1}^{n-1}(j-i)\right).
+\]
+Con $d = j - i$ y $m = n-1-i$:
+\[
+\sum_{i=0}^{n-1}\sum_{d=1}^{n-1-i} d = \sum_{m=0}^{n-1}\frac{m(m+1)}{2} = \frac{(n-1)\,n\,(n+1)}{6} = \Theta(n^3).
+\]
+Por lo tanto $f(n) = \Theta(n^3)$. Como $n^3$ no es $O(n^2)$, la afirmación $f(n) = \Theta(n^2)$ es \textbf{falsa}. (Además el set termina guardando $\Theta(n^3)$ elementos en total, así que la memoria también es cúbica.)
+
+\textbf{Verificación experimental.} Midiendo \texttt{A(n)} en Python, al duplicar $n$ (200, 400, 800) el tiempo se multiplicó por aproximadamente 7.5. Si fuera $\Theta(n^2)$ se multiplicaría por 4; con $\Theta(n^3)$ se espera 8.
+
+\end{document}
