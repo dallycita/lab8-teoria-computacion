@@ -31,6 +31,8 @@ python problema2.py
 python problema3.py
 ```
 
+Los scripts se corren **desde la carpeta raíz del repo**, porque guardan en `resultados/` con rutas relativas.
+
 Cada script imprime la tabla en consola y guarda en `resultados/` el CSV, la gráfica y el reporte de cProfile.
 
 Tiempos aproximados: problema 1 unos 6 s, problema 2 menos de 1 s, problema 3 alrededor de 1 minuto (por n = 100000).
@@ -38,9 +40,10 @@ Tiempos aproximados: problema 1 unos 6 s, problema 2 menos de 1 s, problema 3 al
 ## Decisiones tomadas
 
 - **Lenguaje:** Python, porque trae `cProfile` incluido y permite graficar con matplotlib sin usar otro lenguaje.
-- **Medición:** la tabla usa `time.perf_counter()`, porque cProfile agrega overhead. cProfile se corre aparte con un n representativo y su salida queda en `resultados/*_profile.txt`.
+- **Medición:** la tabla usa `time.perf_counter()`, porque cProfile agrega overhead. cProfile se corre aparte con un n representativo y su salida queda en `resultados/*_profile.txt`. En el problema 1 el reporte solo muestra 2 llamadas: cProfile mide llamadas a funciones, y ahí todo el trabajo es aritmética dentro de una sola función, así que solo da el tiempo total. En los problemas 2 y 3 sí aparecen las llamadas a `print`.
+- **Formato de tiempos:** se guardan en notación científica (`1.234e-06`), porque con decimales fijos los n chicos salían como `0.000000`.
 - **Prints:** en los problemas 2 y 3 el `print` se mantiene para ser fiel al código original, pero la salida se redirige a `os.devnull` mientras se mide. Si no, se mediría la velocidad de la terminal y no la del algoritmo.
-- **Valores grandes de n:** si una corrida tarda más de 3 segundos (`LIMITE_SEGUNDOS` en `medicion.py`), los n siguientes no se ejecutan. Cada n es 10 veces mayor y los tres algoritmos crecen al menos linealmente, así que el siguiente tardaría por lo menos 10 veces más. Los tiempos estimados de las tablas se calcularon escalando el último tiempo medido según el número de iteraciones de cada fórmula.
+- **Valores grandes de n:** si una corrida tarda más de 3 segundos (`LIMITE_SEGUNDOS` en `medicion.py`), los n siguientes no se ejecutan. Cada n es 10 veces mayor y los tres algoritmos crecen al menos linealmente, así que el siguiente tardaría por lo menos 10 veces más. Para esos n el programa calcula un tiempo estimado: escala el último tiempo medido por la razón de operaciones que da la fórmula de la parte a (`contar_operaciones` en cada problema). En el CSV aparecen con tipo `estimado` y en la gráfica como círculos vacíos.
 - **n pequeños:** para n ≤ 1000 se promedian 5 corridas, porque los tiempos son de microsegundos y varían mucho.
 - **Gráficas:** se usa escala log-log porque n va de 1 a 10⁶. En esa escala, la pendiente de la recta indica el exponente de la complejidad.
 

@@ -25,14 +25,18 @@ def tomar_tiempo(funcion, n):
     return fin - inicio
 
 
-def medir(funcion, nombre):
+def medir(funcion, nombre, contar_operaciones):
     resultados = []
     saltar = False
+    ultimo_n, ultimo_tiempo = None, None
 
     for n in VALORES_N:
         if saltar:
-            print(f"n = {n:>8}  ->  no ejecutado (excede el límite de tiempo)")
-            resultados.append((n, None))
+            # se estima escalando el último tiempo medido por la razón de
+            # operaciones que da la fórmula de la parte a
+            tiempo = ultimo_tiempo * contar_operaciones(n) / contar_operaciones(ultimo_n)
+            print(f"n = {n:>8}  ->  {tiempo:.3e} s  (estimado, no se ejecutó)")
+            resultados.append((n, tiempo, "estimado"))
             continue
 
         # para n chicos el tiempo es muy pequeño y ruidoso, así que se promedia
@@ -42,8 +46,9 @@ def medir(funcion, nombre):
             total += tomar_tiempo(funcion, n)
         tiempo = total / repeticiones
 
-        print(f"n = {n:>8}  ->  {tiempo:.6f} s")
-        resultados.append((n, tiempo))
+        print(f"n = {n:>8}  ->  {tiempo:.3e} s")
+        resultados.append((n, tiempo, "medido"))
+        ultimo_n, ultimo_tiempo = n, tiempo
 
         if tiempo > LIMITE_SEGUNDOS:
             saltar = True
@@ -56,23 +61,31 @@ def medir(funcion, nombre):
 def guardar_csv(resultados, nombre):
     with open(f"resultados/{nombre}.csv", "w", newline="") as archivo:
         writer = csv.writer(archivo)
-        writer.writerow(["n", "tiempo_segundos"])
-        for n, tiempo in resultados:
-            writer.writerow([n, f"{tiempo:.6f}" if tiempo is not None else "no ejecutado"])
+        writer.writerow(["n", "tiempo_segundos", "tipo"])
+        for n, tiempo, tipo in resultados:
+            writer.writerow([n, f"{tiempo:.3e}", tipo])
 
 
 def hacer_grafica(resultados, nombre):
-    ns = [n for n, t in resultados if t is not None]
-    tiempos = [t for n, t in resultados if t is not None]
+    ns = [n for n, t, tipo in resultados]
+    tiempos = [t for n, t, tipo in resultados]
+    medidos = [(n, t) for n, t, tipo in resultados if tipo == "medido"]
+    estimados = [(n, t) for n, t, tipo in resultados if tipo == "estimado"]
 
     plt.figure()
-    plt.plot(ns, tiempos, marker="o")
+    plt.plot(ns, tiempos, color="tab:blue")
+    plt.plot([n for n, t in medidos], [t for n, t in medidos], "o",
+             color="tab:blue", label="medido")
+    if estimados:
+        plt.plot([n for n, t in estimados], [t for n, t in estimados], "o",
+                 markerfacecolor="white", color="tab:blue", label="estimado (no se ejecutó)")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Tamaño de input (n)")
     plt.ylabel("Tiempo (s)")
-    plt.title(f"{nombre}: tamaño de input vs. tiempo")
+    plt.title(f"Problema {nombre[-1]}: tamaño de input vs. tiempo")
     plt.grid(True, which="both", alpha=0.3)
+    plt.legend()
     plt.savefig(f"resultados/{nombre}.png", dpi=120)
     plt.close()
 

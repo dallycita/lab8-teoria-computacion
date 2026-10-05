@@ -10,7 +10,11 @@ def function(n):
             break
 
 
+def contar_operaciones(n):
+    return n if n > 1 else 0
+
+
 if __name__ == "__main__":
     print("Problema 2")
-    medir(function, "problema2")
+    medir(function, "problema2", contar_operaciones)
     hacer_profiling(function, 10000, "problema2")
